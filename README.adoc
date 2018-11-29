@@ -103,3 +103,18 @@ root@master:~$ oc rsh rsyslog-acuhj cat /etc/rsyslog.d/container.conf
 *.* @remote-log-host.example.org
 
 ----
+
+== Optional
+
+As-is the destination will receive logs as coming from the pod's hostname. To forward logs with the actual node name you can rebuild the image using the rsyslog.sh here.
+
+----
+ls -l
+-rwxr-xr-x root root  67 Nov 29 13:51 rsyslog.sh
+-rwxr-xr-x root root 263 Nov 29 13:51 Dockerfile
+
+# cat Dockerfile
+FROM registry.access.redhat.com/rhel7/rsyslog
+ADD rsyslog.sh /bin/
+
+# docker build --rm -t registry.domain.com:5000/rsyslog:v01 .
