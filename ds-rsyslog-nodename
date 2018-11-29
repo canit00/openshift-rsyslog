@@ -1,0 +1,88 @@
+apiVersion: v1
+items:
+- apiVersion: extensions/v1beta1
+  kind: DaemonSet
+  metadata:
+    labels:
+      app: rsyslog
+    name: rsyslog
+  spec:
+    selector:
+      matchLabels:
+        app: rsyslog
+        deploymentconfig: rsyslog
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        minReadySeconds: 600
+    template:
+      metadata:
+        annotations:
+          openshift.io/container.rsyslog.image.entrypoint: '["/bin/rsyslog.sh"]'
+          openshift.io/scc: privileged
+        creationTimestamp: null
+        labels:
+          app: rsyslog
+          deploymentconfig: rsyslog
+      spec:
+        containers:
+        - env:
+          - name: MY_NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+        - image: registry.access.redhat.com/rhel7/rsyslog:latest
+          imagePullPolicy: Always
+          name: rsyslog
+          resources:
+            limits:
+              cpu: 100m
+          securityContext:
+            privileged: true
+          terminationMessagePath: /dev/termination-log
+          volumeMounts:
+          - mountPath: /var/log
+            name: varlog
+          - mountPath: /run/log
+            name: runlog
+          - mountPath: /etc/machine-id
+            name: etcmachineid
+            readOnly: true
+          - mountPath: /etc/localtime
+            name: etclocaltime
+            readOnly: true
+          - mountPath: /etc/hostname
+            name: etchostname
+            readOnly: true
+          - mountPath: /etc/rsyslog.d
+            name: rsyslog-config-vol
+            readOnly: true
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - hostPath:
+            path: /var/log
+          name: varlog
+        - hostPath:
+            path: /run/log
+          name: runlog
+        - hostPath:
+            path: /etc/machine-id
+          name: etcmachineid
+        - hostPath:
+            path: /etc/localtime
+          name: etclocaltime
+        - hostPath:
+            path: /etc/hostname
+          name: etchostname
+        - name: rsyslog-config-vol
+          configMap:
+            name: rsyslog-config-cm
+            items:
+            - key: container-config
+              path: container.conf
+kind: List
+metadata: {}
