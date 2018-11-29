@@ -58,6 +58,10 @@ Grant the daemonset cluster role to your user in the right namespace
 === Create DaemonSet
 ----
 $ oc create -f ds-rsyslog.yaml
+
+Or create DaemonSet with vars to set the nodename.
+
+$ oc create -f ds-rsyslog-nodename.yaml
 ----
 
 === Create ConfigMap
